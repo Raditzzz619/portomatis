@@ -14,3 +14,4 @@ Route::resource('portfolio', PortfolioController::class);
 Route::resource('projects', ProjectController::class);
 Route::resource('skills', SkillController::class);
 Route::resource('experiences', ExperienceController::class);
+Route::view('/builder', 'builder')->name('builder');
