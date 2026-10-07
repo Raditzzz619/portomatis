@@ -7,7 +7,7 @@
       --line:#e2e9e5;
       --section:#f7f9f7;
       --white:#fff;
-      --max:1260px;
+      --max:1120px;
     }
 
     *{box-sizing:border-box}
@@ -24,7 +24,7 @@
     a{text-decoration:none;color:inherit}
 
     .nav{
-      height:61px;
+      height:72px;
       border-bottom:1px solid var(--line);
       background:rgba(255,255,255,.97);
       position:relative;
@@ -75,7 +75,8 @@
     .nav-cta:hover,.hero-cta:hover{background:var(--green-dark);transform:translateY(-1px)}
 
     .hero{
-      min-height:497px;
+      min-height:520px;
+      padding:88px 0;
       display:flex;
       justify-content:center;
       align-items:center;
@@ -110,9 +111,9 @@
     h1{
       margin:0 auto 38px;
       max-width:790px;
-      font-size:57px;
+      font-size:clamp(32px, 4.5vw, 60px);
       line-height:1.18;
-      letter-spacing:-2.9px;
+      letter-spacing:-.045em;
       font-weight:800;
     }
     h1 .accent{color:#72a387}
@@ -132,8 +133,7 @@
     .arrow{font-size:20px;line-height:0;margin-left:8px;vertical-align:-1px}
 
     .steps{
-      min-height:724px;
-      padding:108px 24px 104px;
+      padding:88px 24px;
       background:var(--section);
       border-top:1px solid #edf1ee;
       border-bottom:1px solid #edf1ee;
@@ -157,11 +157,11 @@
     }
 
     .cards{
-      width:min(1260px,100%);
+      width:min(var(--max),100%);
       margin:0 auto;
       display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:29px;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:24px;
     }
     .card{
       min-height:220px;
@@ -175,7 +175,7 @@
     }
     .card-number{
       position:absolute;
-      top:-11px;
+      top:22px;
       right:20px;
       color:#f1f3f2;
       font-size:47px;
@@ -245,7 +245,7 @@
     .footer-brand .brand-mark{width:35px;height:35px}
 
     @media (max-width: 900px){
-      h1{font-size:47px}
+      h1{font-size:clamp(36px, 5.3vw, 47px)}
       .cards{gap:18px}
       .card{padding-left:22px;padding-right:22px}
     }
@@ -256,21 +256,49 @@
       .brand{font-size:16px}
       .brand-mark{width:34px;height:34px}
 
-      .hero{min-height:460px}
+      .hero{min-height:420px;padding:72px 0}
       h1{
-        font-size:39px;
+        font-size:clamp(32px, 6vw, 39px);
         line-height:1.17;
         letter-spacing:-1.9px;
         margin-bottom:31px;
       }
-      .hero-cta,.steps-cta{width:100%}
+      .hero-cta,.steps-cta{width:min(363px,100%)}
 
       .steps{padding:75px 18px 76px}
       .section-head{margin-bottom:40px}
-      .section-head h2{font-size:29px}
+      .section-head h2{font-size:clamp(25px, 4.5vw, 29px);letter-spacing:-.035em}
       .section-head p{line-height:1.5}
       .cards{grid-template-columns:1fr}
       .card{min-height:190px}
       .steps-cta{margin-top:36px}
       footer{width:calc(100% - 30px)}
     }
+
+    .nav-cta,.hero-cta,.steps-cta{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      min-height:44px;padding:12px 20px;text-align:center;line-height:1.4;
+    }
+    .hero-cta,.steps-cta{min-height:54px}
+    .steps-cta{display:flex}
+    .arrow{margin-left:0;line-height:1}
+    a:focus-visible,button:focus-visible{outline:3px solid var(--green-dark);outline-offset:5px}
+    .card{min-width:0}
+    .card p{line-height:1.7}
+    .hero-content p{max-width:520px;margin:-16px auto 30px;color:var(--muted);line-height:1.7;font-size:16px}
+    .skip-link{position:fixed;top:12px;left:12px;z-index:100;padding:12px 18px;background:var(--green-dark);color:white;border-radius:8px;transform:translateY(-160%)}
+    .skip-link:focus{transform:translateY(0)}
+    footer{justify-content:space-between;gap:24px}
+    .footer-note{color:var(--muted);font-size:13px;line-height:1.6}
+    @media(max-width:400px){
+      .nav-inner{width:calc(100% - 32px);gap:12px}
+      .brand{gap:6px;font-size:15px}
+      .brand-mark{width:30px;height:30px;flex-shrink:0}
+      .nav-cta{padding:10px 12px;font-size:12px}
+      h1 br,.section-head h2 br{display:none}
+      .hero-content{width:calc(100% - 32px)}
+      .hero-content p{font-size:14px}
+      .steps{padding:56px 16px}
+      footer{padding:24px 0;flex-direction:column;align-items:flex-start;gap:12px}
+    }
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important}}

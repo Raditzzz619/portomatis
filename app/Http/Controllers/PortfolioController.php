@@ -22,7 +22,7 @@ class PortfolioController extends Controller
      */
     public function create()
     {
-        return view('portfolios.create');
+        return redirect()->route('builder.step', 'template');
     }
 
     /**

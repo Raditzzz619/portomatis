@@ -3,129 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portomatis - Buat Portofolio</title>
-    <link rel="stylesheet" href="{{ asset('css/builder.css') }}">
+    <title>{{ $steps[$step] }} - Portomatis</title>
+    <link rel="stylesheet" href="{{ asset('css/builder-flow.css') }}">
+    <script src="{{ asset('js/builder.js') }}" defer></script>
 </head>
 <body>
-<div class="builder-app">
+<a class="skip-link" href="#form-content">Langsung ke konten</a>
 <header class="topbar">
-    <a href="/" class="brand"><span class="brand-icon">✣</span><span>Por<span>tomatis</span></span></a>
-    <div class="top-actions">
-        <a href="/" class="back-home">⌂ &nbsp;Kembali ke Beranda</a>
-        <button class="outline-btn">▣ &nbsp; Copy Shareable Link</button>
-        <button class="download-btn">⇩ &nbsp; Download Portfolio</button>
-    </div>
+    <a href="{{ url('/') }}" class="brand"><span class="brand-icon" aria-hidden="true">P</span>Portomatis</a>
+    <a class="home-link" href="{{ url('/') }}">Kembali ke beranda <span aria-hidden="true">&nearr;</span></a>
 </header>
-
-<div class="builder-layout">
-<aside class="sidebar">
-    <div class="sidebar-heading"><span>◉ &nbsp; TAMPILAN</span><h2>Pilih template</h2></div>
-
-    <div class="template-list">
-        <button class="template-card active">
-            <div class="template-preview minimalist-preview">
-                <div class="mini-line line-short"></div><div class="mini-line line-dark"></div>
-                <div class="mini-line line-medium"></div><div class="mini-circle"></div>
-                <div class="mini-buttons"><i></i><i></i><i></i></div><b>✓</b>
-            </div>
-            <strong>Minimalist</strong><small>Bersih & elegan</small>
-        </button>
-        <button class="template-card">
-            <div class="template-preview modern-preview">
-                <div class="mini-line line-short"></div><div class="mini-line line-dark"></div>
-                <div class="mini-line line-medium"></div><div class="mini-circle"></div>
-                <div class="mini-buttons"><i></i><i></i><i></i></div>
-            </div>
-            <strong>Modern</strong><small>Berani & ekspresif</small>
-        </button>
-        <button class="template-card">
-            <div class="template-preview tech-preview">
-                <div class="mini-line line-short"></div><div class="mini-line line-light"></div>
-                <div class="mini-line line-green"></div><div class="mini-circle dark"></div>
-                <div class="mini-buttons"><i></i><i></i><i></i></div>
-            </div>
-            <strong>Tech</strong><small>Tajam & futuristik</small>
-        </button>
-    </div>
-
-    <div class="sidebar-links">
-        <button>Isi Info Pribadi <span>→</span></button>
-        <button>Lanjut ke Pendidikan &amp;<br>Pengalaman <span>→</span></button>
-    </div>
-
-    <section class="score-box">
-        <div class="score-title"><span>◉ &nbsp; SKOR PORTOFOLIO</span><strong>78/100</strong></div>
-        <div class="score-progress"><span></span></div>
-        <p>Portofolio Anda sudah terlihat kuat. Lengkapi detail untuk skor yang lebih tinggi.</p>
-        <div class="score-item"><span>✓ &nbsp; Info pribadi</span><b>+20</b></div>
-        <div class="score-item"><span>✓ &nbsp; Pendidikan</span><b>+15</b></div>
-        <div class="score-item"><span>✓ &nbsp; Pengalaman kerja</span><b>+18</b></div>
-        <div class="score-item"><span>✓ &nbsp; Proyek pilihan</span><b>+25</b></div>
-    </section>
-
-    <section class="info-box">
-        <h3>♧ &nbsp; IDENTIFIKASI KEKURANGAN</h3>
-        <strong>Portofolio Anda sudah kuat dan hampir siap dibagikan.</strong>
-        <ul><li>Tambahkan hasil terukur pada deskripsi proyek.</li><li>Pastikan kontak dan tautan profesional mudah ditemukan.</li></ul>
-    </section>
-
-    <section class="analysis-box">
-        <h3>♧ &nbsp; ANALISIS BIDANG PEKERJAAN</h3>
-        <small>Bidang terdeteksi</small>
-        <div class="job-row"><strong>Product<br>Design</strong><span>Permintaan<br>Tinggi</span></div>
-        <div class="analysis-line"><span></span></div>
-        <small>Keahlian yang paling dicari di bidang ini:</small>
-        <div class="tags"><em>Figma</em><em>Riset pengguna</em><em>Desain Grafis</em></div>
-        <hr><small>Rekomendasi</small>
-        <p>Tampilkan proses berpikir dan dampak bisnis dari setiap studi kasus.</p>
-    </section>
-
-    <section class="relevance-box">
-        <div class="relevance-title"><h3>◎ &nbsp; RELEVANSI<br>PORTOFOLIO</h3><strong>84<br><small>%</small></strong></div>
-        <p>Portofolio Anda cukup relevan untuk bidang Product Design.</p>
-        <div class="analysis-line"><span></span></div>
-        <div class="check-line">✓ &nbsp; Keahlian sesuai bidang</div>
-        <div class="check-line">✓ &nbsp; Struktur proyek jelas</div>
-        <div class="check-line">✓ &nbsp; Template terlihat profesional</div>
-    </section>
-</aside>
-
-<main class="workspace">
-    <div class="workspace-header"><span>PRA TINJAU PORTOFOLIO</span><p><strong>Minimalist</strong> · Perubahan tersimpan otomatis</p></div>
-
-    <div class="browser-frame">
-        <div class="browser-bar">
-            <div class="browser-dots"><i></i><i></i><i></i></div>
-            <div class="address-bar">↗ &nbsp; portomatis.site/naoval</div>
+<div class="builder-shell">
+    <aside class="sidebar" aria-label="Tahapan pembuatan portofolio">
+        <span class="eyebrow">PORTOFOLIO ANDA</span>
+        <h2>Dari cerita Anda,<br>menjadi karya.</h2>
+        <nav class="step-list">
+            @foreach ($steps as $key => $label)
+                <a href="{{ route('builder.step', $key) }}" class="step-link {{ $step === $key ? 'active' : '' }}" @if($step === $key) aria-current="step" @endif>
+                    <span class="step-number">{{ $loop->iteration }}</span><span>{{ $label }}</span>
+                </a>
+            @endforeach
+        </nav>
+        <div class="draft-note"><strong>Satu langkah lebih dekat.</strong><p>Data disimpan saat Anda menekan Simpan & lanjut. Draft tersedia selama sesi browser ini.</p></div>
+        <a class="sidebar-home" href="{{ route('builder.step', 'preview') }}">Lihat pratinjau &rarr;</a>
+    </aside>
+    <main id="form-content" class="flow-main">
+        <div class="page-heading"><span class="eyebrow">LANGKAH {{ array_search($step, array_keys($steps)) + 1 }} DARI 5</span><h1>{{ $steps[$step] }}</h1>
+            <p>{{ match($step) {
+                'template' => 'Pilih tampilan yang paling mencerminkan diri Anda. Bisa diubah kapan saja.',
+                'personal' => 'Mulai dengan perkenalan singkat. Bantu orang mengenal Anda dan karya Anda.',
+                'experience' => 'Ceritakan perjalanan belajar dan pengalaman profesional Anda.',
+                'projects' => 'Tunjukkan keahlian dan karya yang paling Anda banggakan.',
+                default => 'Periksa hasilnya, unduh, atau publikasikan saat Anda sudah siap.'
+            } }}</p>
         </div>
-
-        <div class="portfolio-page">
-            <nav class="portfolio-nav">
-                <strong>NAOVAL.</strong>
-                <div><a href="#">TENTANG</a><a href="#">PROYEK</a><a href="#">KONTAK</a></div>
-            </nav>
-
-            <section class="hero-preview">
-                <div class="avatar">N</div>
-                <p class="eyebrow">HALO, SAYA NAOVAL</p>
-                <h1>Membangun<br>pengalaman digital yang<br>bermakna.</h1>
-                <p class="description">Saya seorang desainer produk yang membantu brand dan tim membangun produk digital yang intuitif, indah, dan berdampak.</p>
-                <button class="portfolio-cta">Lihat karya saya ↗</button>
-            </section>
-
-            <section class="projects-preview">
-                <div class="projects-heading"><strong>Proyek pilihan</strong><span>01 — 03</span></div>
-                <div class="project-grid">
-                    <article class="project-card project-one"><div class="project-image"></div><strong>Aplikasi Ruang</strong></article>
-                    <article class="project-card project-two"><div class="project-image"></div><strong>Kopi Senja</strong></article>
-                    <article class="project-card project-three"><div class="project-image"></div><strong>Dompetku</strong></article>
+        @if(session('notice'))<div class="notice" role="status">{{ session('notice') }}</div>@endif
+        @if($errors->any())
+            <div class="error-summary" role="alert" tabindex="-1"><strong>Periksa kembali data Anda.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+        @endif
+        @if($step !== 'preview')
+            <form action="{{ route('builder.save', $step) }}" method="POST" class="builder-form">
+                @csrf
+                @include('builder.'.$step)
+                <div class="form-actions">
+                    @if($step !== 'template')<a class="button secondary" href="{{ route('builder.step', array_keys($steps)[array_search($step, array_keys($steps)) - 1]) }}">&larr; Kembali</a>@else<span class="form-hint">Tanpa coding. Tanpa ribet.</span>@endif
+                    <button class="button primary" type="submit">Simpan & lanjut <span aria-hidden="true">&rarr;</span></button>
                 </div>
-            </section>
-        </div>
-    </div>
-</main>
+                <p class="save-status" aria-live="polite"></p>
+            </form>
+        @else
+            @include('builder.preview')
+        @endif
+        <footer class="flow-footer">Portomatis &middot; Ruang untuk potensi Anda.</footer>
+    </main>
 </div>
-</div>
-<script src="{{ asset('js/builder.js') }}"></script>
 </body>
 </html>

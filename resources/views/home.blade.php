@@ -9,11 +9,12 @@
 </head>
 
 <body>
+  <a class="skip-link" href="#main-content">Langsung ke konten</a>
 
   <header class="nav">
     <div class="nav-inner">
 
-      <a class="brand" href="#" aria-label="Portomatis">
+      <a class="brand" href="{{ url('/') }}" aria-label="Portomatis - Beranda">
         <span class="brand-mark">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 3v5M12 16v5M3 12h5M16 12h5"/>
@@ -25,15 +26,15 @@
         <span class="brand-name">Portomatis</span>
       </a>
 
-      <button class="nav-cta" onclick="goToCreate()">
+      <a class="nav-cta" href="{{ route('builder') }}">
         Mulai Membuat
-      </button>
+      </a>
 
     </div>
   </header>
 
 
-  <main>
+  <main id="main-content">
 
     <section class="hero">
       <div class="hero-content">
@@ -42,11 +43,12 @@
           Buat Portofolio Profesional<br>
           dalam <span class="accent">Hitungan Detik</span>
         </h1>
+        <p>Tampilkan proyek, pengalaman, dan keahlian Anda dalam portofolio yang siap dibagikan.</p>
 
-        <button class="hero-cta" onclick="goToCreate()">
+        <a class="hero-cta" href="{{ route('builder') }}">
           Buat Portofolio Saya Sekarang
           <span class="arrow">→</span>
-        </button>
+        </a>
 
       </div>
     </section>
@@ -61,7 +63,7 @@
         </h2>
 
         <p>
-          Tiga langkah sederhana tidak perlu keahlian desain, dan gratis.
+          Tiga langkah sederhana. Tidak perlu keahlian desain, dan gratis.
         </p>
       </div>
 
@@ -117,20 +119,20 @@
             </svg>
           </div>
 
-          <h3>Unduh dan dapatkan Portofolio anda</h3>
+          <h3>Unduh portofolio Anda</h3>
 
           <p>
-            1 klik, dan portofolio anda akan langsung selesai
+            Selesaikan portofolio Anda dalam satu klik, lalu unduh dan bagikan karya terbaik Anda.
           </p>
         </article>
 
       </div>
 
 
-      <button class="steps-cta" onclick="goToCreate()">
+      <a class="steps-cta" href="{{ route('builder') }}">
         Buat Portofolio Saya Sekarang
         <span class="arrow">→</span>
-      </button>
+      </a>
 
     </section>
 
@@ -153,14 +155,8 @@
 
     </div>
 
+    <span class="footer-note">Buat portofolio. Tunjukkan potensi Anda.</span>
   </footer>
-
-
-  <script>
-    function goToCreate(){
-      window.location.href = "{{ route('builder') }}";
-    }
-  </script>
 
 </body>
 </html>
