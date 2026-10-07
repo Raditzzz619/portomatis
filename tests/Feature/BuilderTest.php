@@ -10,6 +10,32 @@ class BuilderTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_profile_photo_is_exported_preserved_and_removable(): void
+    {
+        $image = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aC1sAAAAASUVORK5CYII=');
+        $photo = \Illuminate\Http\UploadedFile::fake()->createWithContent('profile.png', $image);
+        $personal = ['name' => 'Ayu', 'role' => 'Designer'];
+        $this->post('/builder/personal', ['personal' => $personal, 'profile_photo' => $photo])
+            ->assertRedirect('/builder/experience')
+            ->assertSessionHas('builder.draft.personal.photo', 'data:image/png;base64,'.base64_encode($image));
+        $this->get('/builder/download')->assertOk()->assertSee('data:image/png;base64,', false);
+        $this->post('/builder/personal', ['personal' => $personal])
+            ->assertSessionHas('builder.draft.personal.photo');
+        $this->post('/builder/publish')->assertRedirect('/builder/preview');
+        $this->get('/p/'.PublishedPortfolio::firstOrFail()->token)->assertSee('data:image/png;base64,', false);
+        $this->post('/builder/personal', ['personal' => $personal, 'remove_photo' => '1'])
+            ->assertSessionMissing('builder.draft.personal.photo');
+        $this->get('/builder/download')->assertDontSee('data:image/png;base64,', false);
+    }
+
+    public function test_invalid_profile_upload_is_rejected(): void
+    {
+        $this->post('/builder/personal', [
+            'personal' => ['name' => 'Ayu', 'role' => 'Designer'],
+            'profile_photo' => \Illuminate\Http\UploadedFile::fake()->create('document.txt', 10, 'text/plain'),
+        ])->assertSessionHasErrors('profile_photo');
+    }
+
     public function test_builder_steps_and_required_personal_data(): void
     {
         $this->get('/builder')->assertRedirect('/builder/template');
@@ -69,7 +95,8 @@ class BuilderTest extends TestCase
 
     public function test_user_content_is_escaped_in_exports_and_templates_are_distinct(): void
     {
-        foreach (['minimalist', 'modern', 'tech'] as $template) {
+        foreach (array_keys(\App\Http\Controllers\BuilderController::TEMPLATES) as $template) {
+            $this->post('/builder/template', ['template' => $template])->assertRedirect('/builder/personal');
             $this->withSession(['builder.draft' => ['template' => $template, 'personal' => [
                 'name' => '<script>alert(1)</script>', 'role' => 'Designer',
             ]]])->get('/builder/download')->assertOk()->assertSee('theme-'.$template)

@@ -42,7 +42,7 @@
             <div class="error-summary" role="alert" tabindex="-1"><strong>Periksa kembali data Anda.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
         @endif
         @if($step !== 'preview')
-            <form action="{{ route('builder.save', $step) }}" method="POST" class="builder-form">
+            <form action="{{ route('builder.save', $step) }}" method="POST" enctype="multipart/form-data" class="builder-form">
                 @csrf
                 @include('builder.'.$step)
                 <div class="form-actions">

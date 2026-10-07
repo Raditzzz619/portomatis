@@ -6,6 +6,54 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.save-status').textContent = 'Ada perubahan yang belum disimpan. Tekan Simpan & lanjut.';
     });
     form?.addEventListener('submit', () => { dirty = false; });
+    const photoUpload = document.querySelector('[data-photo-upload]');
+    if (photoUpload) {
+        const input = photoUpload.querySelector('input[type="file"]');
+        const preview = photoUpload.querySelector('[data-photo-preview]');
+        const placeholder = photoUpload.querySelector('[data-photo-placeholder]');
+        const remove = photoUpload.querySelector('[data-photo-remove]');
+        const removeValue = photoUpload.querySelector('[data-photo-remove-value]');
+        const error = photoUpload.querySelector('[data-photo-error]');
+        const savedPhoto = preview.getAttribute('src');
+        let objectUrl;
+        const showPhoto = src => {
+            preview.src = src;
+            preview.hidden = !src;
+            placeholder.hidden = Boolean(src);
+            remove.hidden = !src;
+        };
+        if (removeValue.value === '1') showPhoto('');
+        input.addEventListener('change', () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            const file = input.files[0];
+            error.textContent = '';
+            input.removeAttribute('aria-invalid');
+            if (file && (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024)) {
+                error.textContent = 'Pilih gambar JPG, PNG, atau WebP dengan ukuran maksimal 2 MB.';
+                input.value = '';
+                input.setAttribute('aria-invalid', 'true');
+                showPhoto(removeValue.value === '1' ? '' : savedPhoto);
+                return;
+            }
+            if (file) {
+                objectUrl = URL.createObjectURL(file);
+                removeValue.value = '0';
+                showPhoto(objectUrl);
+            } else {
+                showPhoto(removeValue.value === '1' ? '' : savedPhoto);
+            }
+        });
+        remove.addEventListener('click', () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+            input.value = '';
+            removeValue.value = '1';
+            error.textContent = '';
+            input.removeAttribute('aria-invalid');
+            showPhoto('');
+            input.focus();
+            form?.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+    }
     window.addEventListener('beforeunload', event => {
         if (dirty) { event.preventDefault(); event.returnValue = ''; }
     });

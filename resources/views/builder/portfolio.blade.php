@@ -12,7 +12,7 @@
 <div class="portfolio-container">
     <header class="portfolio-header"><a class="wordmark" href="#about">{{ $person['name'] }}<span>.</span></a><nav aria-label="Navigasi portofolio"><a href="#about">Tentang</a>@if(!empty($draft['projects']))<a href="#projects">Proyek</a>@endif<a href="#contact">Kontak</a></nav></header>
     <main>
-        <section class="portfolio-hero" id="about"><span class="avatar" aria-hidden="true">{{ mb_substr($person['name'], 0, 1) }}</span><p class="eyebrow">HALO, SAYA {{ $person['name'] }}</p><h1>{{ $person['role'] }}</h1>@if(!empty($person['bio']))<p class="bio">{{ $person['bio'] }}</p>@endif
+        <section class="portfolio-hero" id="about">@include('builder.ornament')@if(!empty($person['photo']))<img class="avatar profile-avatar" src="{{ $person['photo'] }}" alt="Foto profil {{ $person['name'] }}">@else<span class="avatar" aria-hidden="true">{{ mb_substr($person['name'], 0, 1) }}</span>@endif<p class="eyebrow">HALO, SAYA {{ $person['name'] }}</p><h1>{{ $person['role'] }}</h1>@if(!empty($person['bio']))<p class="bio">{{ $person['bio'] }}</p>@endif
         @if(!empty($person['location']))<p class="location">{{ $person['location'] }}</p>@endif
         <a class="portfolio-button" href="{{ empty($draft['projects']) ? '#contact' : '#projects' }}">{{ empty($draft['projects']) ? 'Hubungi saya' : 'Lihat karya saya' }} &nearr;</a></section>
         @if(!empty($draft['projects']))
