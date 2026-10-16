@@ -1,6 +1,6 @@
 @php($personal = old('personal', $draft['personal'] ?? []))
 <section class="form-card">
-    <div class="card-heading"><span class="section-icon" aria-hidden="true">01</span><div><h2>Perkenalkan diri Anda</h2><p>Kolom bertanda * wajib diisi.</p></div></div>
+    <div class="card-heading"><span class="section-icon" aria-hidden="true">01</span><div><h2>Perkenalkan diri Anda</h2><p>Kolom bertanda * wajib diisi. Tautan website dan LinkedIn opsional, boleh dikosongkan.</p></div></div>
     <div class="photo-upload" data-photo-upload>
         <div class="photo-preview">
             <img data-photo-preview src="{{ $draft['personal']['photo'] ?? '' }}" alt="Pratinjau foto profil" @if(empty($draft['personal']['photo'])) hidden @endif>
@@ -16,7 +16,7 @@
         </div>
     </div>
     <div class="field-grid">
-        @foreach(['name' => ['Nama lengkap', 'Nama Anda', true], 'role' => ['Profesi / bidang', 'Contoh: Product Designer', true], 'email' => ['Email', 'nama@email.com', false], 'phone' => ['Nomor telepon', 'Contoh: +62 812 3456 7890', false], 'location' => ['Lokasi', 'Contoh: Jakarta, Indonesia', false], 'website' => ['Website', 'https://website-anda.com', false], 'linkedin' => ['LinkedIn', 'https://www.linkedin.com/in/nama-anda', false]] as $key => [$label, $placeholder, $required])
+        @foreach(['name' => ['Nama lengkap', 'Nama Anda', true], 'role' => ['Profesi / bidang', 'Contoh: Product Designer', true], 'email' => ['Email', 'nama@email.com', false], 'phone' => ['Nomor telepon', 'Contoh: +62 812 3456 7890', false], 'location' => ['Lokasi', 'Contoh: Jakarta, Indonesia', false], 'website' => ['Website (opsional)', 'https://website-anda.com', false], 'linkedin' => ['LinkedIn (opsional)', 'https://www.linkedin.com/in/nama-anda', false]] as $key => [$label, $placeholder, $required])
             <div class="field"><label for="personal-{{ $key }}">{{ $label }}{{ $required ? ' *' : '' }}</label><input id="personal-{{ $key }}" name="personal[{{ $key }}]" type="{{ $key === 'email' ? 'email' : (in_array($key, ['website','linkedin']) ? 'url' : ($key === 'phone' ? 'tel' : 'text')) }}" value="{{ $personal[$key] ?? '' }}" placeholder="{{ $placeholder }}" maxlength="{{ $key === 'name' ? 100 : ($key === 'role' || $key === 'location' ? 120 : ($key === 'phone' ? 40 : ($key === 'email' ? 255 : 2048))) }}" @required($required) @if($errors->has('personal.'.$key)) aria-invalid="true" aria-describedby="error-{{ $key }}" @endif>
             @error('personal.'.$key)<span class="field-error" id="error-{{ $key }}">{{ $message }}</span>@enderror</div>
         @endforeach
