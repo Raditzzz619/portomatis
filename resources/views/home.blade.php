@@ -26,9 +26,10 @@
         <span class="brand-name">Portomatis</span>
       </a>
 
-      <a class="nav-cta" href="{{ route('builder') }}">
+      <form method="POST" action="{{ route('builder.new') }}">@csrf
+      <button type="submit" class="nav-cta">
         Mulai Membuat
-      </a>
+      </button></form>
 
     </div>
   </header>
@@ -45,10 +46,11 @@
         </h1>
         <p>Tampilkan proyek, pengalaman, dan keahlian Anda dalam portofolio yang siap dibagikan.</p>
 
-        <a class="hero-cta" href="{{ route('builder') }}">
+        <form method="POST" action="{{ route('builder.new') }}">@csrf
+        <button type="submit" class="hero-cta">
           Buat Portofolio Saya Sekarang
           <span class="arrow">→</span>
-        </a>
+        </button></form>
 
       </div>
     </section>
@@ -129,10 +131,11 @@
       </div>
 
 
-      <a class="steps-cta" href="{{ route('builder') }}">
+      <form method="POST" action="{{ route('builder.new') }}">@csrf
+      <button type="submit" class="steps-cta">
         Buat Portofolio Saya Sekarang
         <span class="arrow">→</span>
-      </a>
+      </button></form>
 
     </section>
 

@@ -34,6 +34,16 @@ class BuilderController extends Controller
         return redirect()->route('builder.step', 'template');
     }
 
+    public function startNew(Request $request)
+    {
+        $request->session()->forget('builder');
+        $request->session()->forget(['_old_input', 'errors']);
+        $request->session()->put('builder.draft', ['template' => 'minimalist']);
+
+        return redirect()->route('builder.step', 'template')
+            ->with('notice', 'Portofolio baru siap dibuat. Pilih template, lalu isi data Anda.');
+    }
+
     public function step(Request $request, string $step)
     {
         abort_unless(array_key_exists($step, self::STEPS), 404);
@@ -120,6 +130,9 @@ class BuilderController extends Controller
         $request->session()->forget('builder.share_url');
         $order = array_keys(self::STEPS);
         $next = $order[array_search($step, $order, true) + 1];
+        if ($step === 'template' && !empty($draft['personal']['name']) && !empty($draft['personal']['role'])) {
+            $next = 'preview';
+        }
 
         return redirect()->route('builder.step', $next)->with('notice', 'Draft berhasil disimpan.');
     }

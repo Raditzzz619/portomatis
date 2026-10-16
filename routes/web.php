@@ -16,6 +16,8 @@ Route::resource('projects', ProjectController::class);
 Route::resource('skills', SkillController::class);
 Route::resource('experiences', ExperienceController::class);
 Route::get('/builder', [BuilderController::class, 'index'])->name('builder');
+Route::post('/builder/new', [BuilderController::class, 'startNew'])->name('builder.new');
+Route::post('/builder/new', [BuilderController::class, 'startNew'])->name('builder.new');
 Route::get('/builder/download', [BuilderController::class, 'download'])->name('builder.download');
 Route::post('/builder/publish', [BuilderController::class, 'publish'])->middleware('throttle:10,1')->name('builder.publish');
 Route::get('/builder/{step}', [BuilderController::class, 'step'])->name('builder.step');

@@ -66,7 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return index ? Number(index[1]) : -1;
         })) + 1;
         const refresh = () => {
-            rows.querySelectorAll('[data-row-title]').forEach((title, index) => { title.textContent = `Entri ${index + 1}`; });
+            rows.querySelectorAll('[data-row]').forEach((row, index) => {
+                const inputs = row.querySelectorAll('input, textarea');
+                row.querySelector('[data-row-title]').textContent = inputs[0]?.value.trim() || `Entri ${index + 1}`;
+                row.querySelector('[data-row-subtitle]').textContent = [inputs[1]?.value.trim(), row.querySelector('[name$="[period]"]')?.value.trim()].filter(Boolean).join(' / ');
+            });
             addButton.disabled = rows.children.length >= 20;
         };
         addButton.addEventListener('click', () => {
@@ -78,18 +82,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             next++;
+            rows.querySelectorAll('[data-row]').forEach(row => { row.open = false; });
             rows.appendChild(template);
             refresh();
             rows.lastElementChild.querySelector('input, textarea')?.focus();
             form?.dispatchEvent(new Event('input', { bubbles: true }));
         });
         rows.addEventListener('click', event => {
+            const collapse = event.target.closest('[data-collapse]');
+            if (collapse) {
+                const row = collapse.closest('[data-row]');
+                row.open = false;
+                row.querySelector('summary').focus();
+                return;
+            }
             const remove = event.target.closest('[data-remove]');
             if (!remove) return;
             remove.closest('[data-row]').remove();
             refresh();
             addButton.focus();
             form?.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        rows.addEventListener('input', refresh);
+        rows.addEventListener('toggle', event => {
+            if (event.target.matches('[data-row]') && event.target.open) {
+                rows.querySelectorAll('[data-row]').forEach(row => {
+                    if (row !== event.target && !row.querySelector('.field-error')) row.open = false;
+                });
+            }
+        }, true);
+        rows.querySelectorAll('[data-row]').forEach((row, index) => {
+            row.open = Boolean(row.querySelector('.field-error')) || (index === 0 && !row.querySelector('input')?.value);
         });
         refresh();
     });

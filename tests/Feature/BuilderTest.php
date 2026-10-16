@@ -10,6 +10,53 @@ class BuilderTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_starting_new_clears_previous_draft_and_keeps_published_portfolio(): void
+    {
+        $draft = [
+            'template' => 'tech',
+            'personal' => ['name' => 'Ayu Lama', 'role' => 'Designer'],
+            'education' => [['school' => 'Sekolah Lama']],
+            'experience' => [['company' => 'Studio Lama']],
+            'skills' => ['Figma'],
+            'projects' => [['title' => 'Proyek Lama']],
+        ];
+        $this->withSession(['builder.draft' => $draft])->post('/builder/publish')->assertRedirect('/builder/preview');
+        $previousToken = PublishedPortfolio::firstOrFail()->token;
+        $this->get('/')->assertOk()->assertSee(route('builder.new'));
+        $this->post('/builder/new')->assertRedirect('/builder/template')
+            ->assertSessionHas('builder.draft', ['template' => 'minimalist'])
+            ->assertSessionMissing('builder.share_url')
+            ->assertSessionMissing('builder.published_token');
+        $this->post('/builder/template', ['template' => 'web'])->assertRedirect('/builder/personal');
+        $this->get('/builder/personal')->assertOk()->assertDontSee('Ayu Lama');
+        $this->get('/builder/preview')->assertRedirect('/builder/personal');
+        $this->get('/p/'.$previousToken)->assertOk()->assertSee('Ayu Lama');
+        $this->post('/builder/personal', ['personal' => ['name' => 'Budi Baru', 'role' => 'Developer']]);
+        $this->post('/builder/publish')->assertRedirect('/builder/preview');
+        $this->assertDatabaseCount('published_portfolios', 2);
+        $this->get('/p/'.$previousToken)->assertSee('Ayu Lama')->assertDontSee('Budi Baru');
+    }
+
+    public function test_switching_templates_preserves_all_data_and_returns_to_preview(): void
+    {
+        $draft = [
+            'template' => 'minimalist',
+            'personal' => ['name' => 'Ayu', 'role' => 'Designer', 'photo' => 'data:image/png;base64,test'],
+            'education' => [['school' => 'Universitas Indonesia', 'degree' => 'Desain']],
+            'experience' => [['company' => 'Studio Kreatif', 'role' => 'Designer']],
+            'skills' => ['Figma'],
+            'projects' => [['title' => 'Aplikasi Ruang']],
+        ];
+        foreach (array_keys(\App\Http\Controllers\BuilderController::TEMPLATES) as $template) {
+            $this->withSession(['builder.draft' => $draft])
+                ->post('/builder/template', ['template' => $template])
+                ->assertRedirect('/builder/preview')
+                ->assertSessionHas('builder.draft', array_replace($draft, ['template' => $template]));
+            $this->get('/builder/download')->assertOk()->assertSee('theme-'.$template)
+                ->assertSee('Aplikasi Ruang')->assertSee('Universitas Indonesia')->assertSee('Studio Kreatif');
+        }
+    }
+
     public function test_profile_photo_is_exported_preserved_and_removable(): void
     {
         $image = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aC1sAAAAASUVORK5CYII=');
@@ -96,7 +143,7 @@ class BuilderTest extends TestCase
     public function test_user_content_is_escaped_in_exports_and_templates_are_distinct(): void
     {
         foreach (array_keys(\App\Http\Controllers\BuilderController::TEMPLATES) as $template) {
-            $this->post('/builder/template', ['template' => $template])->assertRedirect('/builder/personal');
+            $this->withSession(['builder.draft' => []])->post('/builder/template', ['template' => $template])->assertRedirect('/builder/personal');
             $this->withSession(['builder.draft' => ['template' => $template, 'personal' => [
                 'name' => '<script>alert(1)</script>', 'role' => 'Designer',
             ]]])->get('/builder/download')->assertOk()->assertSee('theme-'.$template)

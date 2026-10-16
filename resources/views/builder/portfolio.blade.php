@@ -6,6 +6,7 @@
     <title>{{ $draft['personal']['name'] }} - {{ $draft['personal']['role'] }}</title>
     <meta name="description" content="{{ \Illuminate\Support\Str::limit($draft['personal']['bio'] ?? '', 160) }}">
     <style>{!! file_get_contents(public_path('css/portfolio.css')) !!}</style>
+    <style>{!! file_get_contents(public_path('css/portfolio-refinements.css')) !!}</style>
 </head>
 <body class="theme-{{ $draft['template'] ?? 'minimalist' }}">
 @php($person = $draft['personal'])

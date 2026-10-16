@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $steps[$step] }} - Portomatis</title>
     <link rel="stylesheet" href="{{ asset('css/builder-flow.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/builder-refinements.css') }}">
     <script src="{{ asset('js/builder.js') }}" defer></script>
 </head>
 <body>
@@ -47,7 +48,7 @@
                 @include('builder.'.$step)
                 <div class="form-actions">
                     @if($step !== 'template')<a class="button secondary" href="{{ route('builder.step', array_keys($steps)[array_search($step, array_keys($steps)) - 1]) }}">&larr; Kembali</a>@else<span class="form-hint">Tanpa coding. Tanpa ribet.</span>@endif
-                    <button class="button primary" type="submit">Simpan & lanjut <span aria-hidden="true">&rarr;</span></button>
+                    <button class="button primary" type="submit">{{ $step === 'template' && !empty($draft['personal']['name']) && !empty($draft['personal']['role']) ? 'Terapkan template' : 'Simpan & lanjut' }} <span aria-hidden="true">&rarr;</span></button>
                 </div>
                 <p class="save-status" aria-live="polite"></p>
             </form>
