@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PublishedPortfolio;
+use App\Services\PortfolioPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -171,6 +172,28 @@ class BuilderController extends Controller
 
         return response($html)->header('Content-Type', 'text/html; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
+    public function pdf(Request $request, PortfolioPdf $pdf)
+    {
+        return $this->pdfResponse($request, $pdf, 'inline');
+    }
+
+    public function downloadPdf(Request $request, PortfolioPdf $pdf)
+    {
+        return $this->pdfResponse($request, $pdf, 'attachment');
+    }
+
+    private function pdfResponse(Request $request, PortfolioPdf $pdf, string $disposition)
+    {
+        $draft = $this->draft($request);
+        $filename = (Str::slug($draft['personal']['name']) ?: 'portofolio').'-portofolio.pdf';
+
+        return response($pdf->render($draft))
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', $disposition.'; filename="'.$filename.'"')
+            ->header('Cache-Control', 'private, no-store')
+            ->header('X-Content-Type-Options', 'nosniff');
     }
 
     public function publish(Request $request)

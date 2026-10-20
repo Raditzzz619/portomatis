@@ -1,5 +1,5 @@
 <details class="repeat-row" data-row open>
-    <summary class="row-heading"><span class="row-summary"><strong data-row-title>{{ ($row['school'] ?? $row['company'] ?? $row['title'] ?? '') ?: 'Entri baru' }}</strong><span class="field-help" data-row-subtitle>{{ $row['degree'] ?? $row['role'] ?? $row['url'] ?? '' }}</span></span><span class="row-toggle">Edit / tutup</span></summary>
+    <summary class="row-heading"><span class="row-summary"><strong data-row-title>{{ ($row['school'] ?? $row['company'] ?? $row['title'] ?? '') ?: 'Entri baru' }}</strong><span class="field-help" data-row-subtitle>{{ $row['degree'] ?? $row['role'] ?? $row['url'] ?? '' }}</span></span><span class="row-toggle" data-row-toggle>Tutup</span></summary>
     <div class="field-grid">
         @foreach($fields as $key => [$label, $placeholder, $max])
             <div class="field {{ $key === 'description' ? 'full' : '' }}"><label for="{{ $group }}-{{ $index }}-{{ $key }}">{{ $label }}</label>
@@ -12,5 +12,5 @@
             </div>
         @endforeach
     </div>
-    <div class="row-actions"><button class="button secondary" type="button" data-collapse>Selesai mengisi</button><button class="remove-button" type="button" data-remove aria-label="Hapus entri {{ $group }}">Hapus entri</button></div>
+    <div class="row-actions"><button class="remove-button" type="button" data-remove aria-label="Hapus entri {{ $group }}">Hapus entri</button></div>
 </details>

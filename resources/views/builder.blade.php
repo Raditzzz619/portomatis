@@ -6,6 +6,8 @@
     <title>{{ $steps[$step] }} - Portomatis</title>
     <link rel="stylesheet" href="{{ asset('css/builder-flow.css') }}">
     <link rel="stylesheet" href="{{ asset('css/builder-refinements.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/domicile.css') }}">
+    <script src="{{ asset('js/domicile.js') }}" defer></script>
     <script src="{{ asset('js/builder.js') }}" defer></script>
 </head>
 <body>
@@ -20,15 +22,15 @@
         <h2>Dari cerita Anda,<br>menjadi karya.</h2>
         <nav class="step-list">
             @foreach ($steps as $key => $label)
-                <a href="{{ route('builder.step', $key) }}" class="step-link {{ $step === $key ? 'active' : '' }}" @if($step === $key) aria-current="step" @endif>
+                <a href="{{ route('builder.step', $key) }}" data-builder-step="{{ $key }}" class="step-link {{ $step === $key ? 'active' : '' }}" @if($step === $key) aria-current="step" @endif>
                     <span class="step-number">{{ $loop->iteration }}</span><span>{{ $label }}</span>
                 </a>
             @endforeach
         </nav>
-        <div class="draft-note"><strong>Satu langkah lebih dekat.</strong><p>Data disimpan saat Anda menekan Simpan & lanjut. Draft tersedia selama sesi browser ini.</p></div>
+        <div class="draft-note"><strong>Satu langkah lebih dekat.</strong><p>{{ $step === 'template' ? 'Arahkan ke template pilihan Anda, lalu tekan tombol di atasnya untuk melanjutkan.' : 'Data disimpan saat Anda menekan Simpan & lanjut atau berpindah langkah.' }} Draft tersedia selama sesi browser ini.</p></div>
         <a class="sidebar-home" href="{{ route('builder.step', 'preview') }}">Lihat pratinjau &rarr;</a>
     </aside>
-    <main id="form-content" class="flow-main">
+    <main id="form-content" class="flow-main" data-current-step="{{ $step }}" tabindex="-1">
         <div class="page-heading"><span class="eyebrow">LANGKAH {{ array_search($step, array_keys($steps)) + 1 }} DARI 5</span><h1>{{ $steps[$step] }}</h1>
             <p>{{ match($step) {
                 'template' => 'Pilih tampilan yang paling mencerminkan diri Anda. Bisa diubah kapan saja.',
@@ -46,10 +48,12 @@
             <form action="{{ route('builder.save', $step) }}" method="POST" enctype="multipart/form-data" class="builder-form">
                 @csrf
                 @include('builder.'.$step)
+                @if($step !== 'template')
                 <div class="form-actions">
                     @if($step !== 'template')<a class="button secondary" href="{{ route('builder.step', array_keys($steps)[array_search($step, array_keys($steps)) - 1]) }}">&larr; Kembali</a>@else<span class="form-hint">Tanpa coding. Tanpa ribet.</span>@endif
                     <button class="button primary" type="submit">{{ $step === 'template' && !empty($draft['personal']['name']) && !empty($draft['personal']['role']) ? 'Terapkan template' : 'Simpan & lanjut' }} <span aria-hidden="true">&rarr;</span></button>
                 </div>
+                @endif
                 <p class="save-status" aria-live="polite"></p>
             </form>
         @else

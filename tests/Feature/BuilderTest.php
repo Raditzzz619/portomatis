@@ -86,8 +86,9 @@ class BuilderTest extends TestCase
     public function test_builder_steps_and_required_personal_data(): void
     {
         $this->get('/builder')->assertRedirect('/builder/template');
-        foreach (['template', 'personal', 'experience', 'projects'] as $step) {
-            $this->get('/builder/'.$step)->assertOk()->assertSee('Simpan & lanjut', false);
+        $this->get('/builder/template')->assertOk()->assertSee('Lanjut isi data')->assertDontSee('Simpan & lanjut', false);
+        foreach (['personal', 'experience', 'projects'] as $step) {
+            $this->get('/builder/'.$step)->assertOk()->assertSee('Simpan & lanjut');
         }
         $this->get('/builder/preview')->assertRedirect('/builder/personal');
         $this->get('/builder/unknown')->assertNotFound();

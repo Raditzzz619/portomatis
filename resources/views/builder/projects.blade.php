@@ -4,7 +4,7 @@
 </section>
 @php($fields = ['title' => ['Nama proyek', 'Contoh: Redesign Aplikasi Ruang', 180], 'url' => ['Tautan proyek (opsional)', 'https://...', 2048], 'description' => ['Deskripsi proyek', 'Ceritakan tantangan, solusi, peran Anda, dan hasilnya.', 2000]])
 <section class="form-card" data-repeat-group="projects">
-    <div class="card-heading"><span class="section-icon" aria-hidden="true">05</span><div><h2>Proyek pilihan</h2><p>Tampilkan karya terbaik Anda. Opsional.</p></div></div>
+    <div class="card-heading"><span class="section-icon" aria-hidden="true">05</span><div><h2>Proyek pilihan</h2><p>Tampilkan karya terbaik Anda. Opsional. Jelaskan peran dan hasil proyek agar karya tetap jelas saat dibaca dalam PDF. Tautan menjadi tombol pada website dan alamat referensi tertulis di PDF.</p></div></div>
     <div data-rows>@foreach(old('projects', $draft['projects'] ?? [[]]) as $index => $row)@include('builder.row', ['group' => 'projects', 'index' => $index, 'row' => $row, 'fields' => $fields])@endforeach</div>
     <template data-row-template>@include('builder.row', ['group' => 'projects', 'index' => '__INDEX__', 'row' => [], 'fields' => $fields])</template>
     <button type="button" class="button add-button" data-add>+ Tambah proyek</button>
