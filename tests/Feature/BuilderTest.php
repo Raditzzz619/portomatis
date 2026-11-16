@@ -52,6 +52,12 @@ class BuilderTest extends TestCase
                 ->post('/builder/template', ['template' => $template])
                 ->assertRedirect('/builder/preview')
                 ->assertSessionHas('builder.draft', array_replace($draft, ['template' => $template]));
+            $this->get('/builder/preview')->assertOk()
+                ->assertSee('theme-'.$template)
+                ->assertSee('Ayu')
+                ->assertSee('Aplikasi Ruang')
+                ->assertSee('Universitas Indonesia')
+                ->assertSee('Studio Kreatif');
             $this->get('/builder/download')->assertOk()->assertSee('theme-'.$template)
                 ->assertSee('Aplikasi Ruang')->assertSee('Universitas Indonesia')->assertSee('Studio Kreatif');
         }
@@ -86,9 +92,14 @@ class BuilderTest extends TestCase
     public function test_builder_steps_and_required_personal_data(): void
     {
         $this->get('/builder')->assertRedirect('/builder/template');
-        $this->get('/builder/template')->assertOk()->assertSee('Lanjut isi data')->assertDontSee('Simpan & lanjut', false);
+        $this->get('/builder/template')->assertOk()
+            ->assertSee('data-carousel-next', false)
+            ->assertDontSee('Lanjut isi data')
+            ->assertDontSee('Simpan & lanjut', false);
         foreach (['personal', 'experience', 'projects'] as $step) {
-            $this->get('/builder/'.$step)->assertOk()->assertSee('Simpan & lanjut');
+            $this->get('/builder/'.$step)->assertOk()
+                ->assertSee('data-carousel-next', false)
+                ->assertDontSee('Simpan & lanjut', false);
         }
         $this->get('/builder/preview')->assertRedirect('/builder/personal');
         $this->get('/builder/unknown')->assertNotFound();

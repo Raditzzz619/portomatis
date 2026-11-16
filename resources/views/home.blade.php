@@ -40,6 +40,7 @@
     <section class="hero">
       <div class="hero-content">
 
+        <span class="hero-label">PORTOFOLIO PROFESIONAL, TANPA RIBET</span>
         <h1>
           Buat Portofolio Profesional<br>
           dalam <span class="accent">Hitungan Detik</span>

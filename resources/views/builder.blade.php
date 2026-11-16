@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="{{ asset('css/builder-flow.css') }}">
     <link rel="stylesheet" href="{{ asset('css/builder-refinements.css') }}">
     <link rel="stylesheet" href="{{ asset('css/domicile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/monochrome.css') }}?v={{ filemtime(public_path('css/monochrome.css')) }}">
     <script src="{{ asset('js/domicile.js') }}" defer></script>
-    <script src="{{ asset('js/builder.js') }}" defer></script>
+    <script src="{{ asset('js/builder.js') }}?v={{ filemtime(public_path('js/builder.js')) }}" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#form-content">Langsung ke konten</a>
@@ -17,22 +18,11 @@
     <a class="home-link" href="{{ url('/') }}">Kembali ke beranda <span aria-hidden="true">&nearr;</span></a>
 </header>
 <div class="builder-shell">
-    <aside class="sidebar" aria-label="Tahapan pembuatan portofolio">
-        <span class="eyebrow">PORTOFOLIO ANDA</span>
-        <h2>Dari cerita Anda,<br>menjadi karya.</h2>
-        <nav class="step-list">
-            @foreach ($steps as $key => $label)
-                <a href="{{ route('builder.step', $key) }}" data-builder-step="{{ $key }}" class="step-link {{ $step === $key ? 'active' : '' }}" @if($step === $key) aria-current="step" @endif>
-                    <span class="step-number">{{ $loop->iteration }}</span><span>{{ $label }}</span>
-                </a>
-            @endforeach
-        </nav>
-        <div class="draft-note"><strong>Satu langkah lebih dekat.</strong><p>{{ $step === 'template' ? 'Arahkan ke template pilihan Anda, lalu tekan tombol di atasnya untuk melanjutkan.' : 'Data disimpan saat Anda menekan Simpan & lanjut atau berpindah langkah.' }} Draft tersedia selama sesi browser ini.</p></div>
-        <a class="sidebar-home" href="{{ route('builder.step', 'preview') }}">Lihat pratinjau &rarr;</a>
-    </aside>
     <main id="form-content" class="flow-main" data-current-step="{{ $step }}" tabindex="-1">
-        <div class="page-heading"><span class="eyebrow">LANGKAH {{ array_search($step, array_keys($steps)) + 1 }} DARI 5</span><h1>{{ $steps[$step] }}</h1>
-            <p>{{ match($step) {
+        <div class="page-heading">
+            <span class="eyebrow" data-step-count>LANGKAH {{ array_search($step, array_keys($steps)) + 1 }} DARI {{ count($steps) }}</span>
+            <h1 data-step-title tabindex="-1">{{ $steps[$step] }}</h1>
+            <p data-step-description>{{ match($step) {
                 'template' => 'Pilih tampilan yang paling mencerminkan diri Anda. Bisa diubah kapan saja.',
                 'personal' => 'Mulai dengan perkenalan singkat. Bantu orang mengenal Anda dan karya Anda.',
                 'experience' => 'Ceritakan perjalanan belajar dan pengalaman profesional Anda.',
@@ -41,24 +31,46 @@
             } }}</p>
         </div>
         @if(session('notice'))<div class="notice" role="status">{{ session('notice') }}</div>@endif
-        @if($errors->any())
-            <div class="error-summary" role="alert" tabindex="-1"><strong>Periksa kembali data Anda.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
-        @endif
-        @if($step !== 'preview')
-            <form action="{{ route('builder.save', $step) }}" method="POST" enctype="multipart/form-data" class="builder-form">
-                @csrf
-                @include('builder.'.$step)
-                @if($step !== 'template')
-                <div class="form-actions">
-                    @if($step !== 'template')<a class="button secondary" href="{{ route('builder.step', array_keys($steps)[array_search($step, array_keys($steps)) - 1]) }}">&larr; Kembali</a>@else<span class="form-hint">Tanpa coding. Tanpa ribet.</span>@endif
-                    <button class="button primary" type="submit">{{ $step === 'template' && !empty($draft['personal']['name']) && !empty($draft['personal']['role']) ? 'Terapkan template' : 'Simpan & lanjut' }} <span aria-hidden="true">&rarr;</span></button>
+        <div class="step-progress" aria-label="Progres pengisian">
+            <span data-progress-bar></span>
+        </div>
+        <div class="step-carousel">
+            <button class="step-arrow" type="button" data-carousel-prev aria-label="Kembali ke langkah sebelumnya" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m7 7-7-7 7-7"/></svg>
+            </button>
+            <div class="step-panels" data-step-viewport>
+                <div class="step-track" data-step-track>
+                    @foreach($steps as $key => $label)
+                        <section class="step-panel {{ $step === $key ? 'active' : '' }}" data-step-panel="{{ $key }}" data-step-label="{{ $label }}" aria-label="{{ $label }}">
+                            @if($key === 'preview')
+                                @if(!empty($draft['personal']['name']))
+                                    @include('builder.preview')
+                                @else
+                                    <section class="form-card">
+                                        <span class="eyebrow">PRATINJAU PORTOFOLIO</span>
+                                        <h2>Pratinjau siap setelah info pribadi diisi.</h2>
+                                        <p>Lengkapi nama dan profesi Anda untuk melihat, mengunduh, atau memublikasikan portofolio.</p>
+                                        <button class="button primary" type="button" data-go-to-personal>Isi info pribadi &rarr;</button>
+                                    </section>
+                                @endif
+                            @else
+                                <form action="{{ route('builder.save', $key) }}" method="POST" enctype="multipart/form-data" class="builder-form" data-form-step="{{ $key }}">
+                                    @csrf
+                                    @if($step === $key && $errors->any())
+                                        <div class="error-summary" role="alert" tabindex="-1"><strong>Periksa kembali data Anda.</strong><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                                    @endif
+                                    @include('builder.'.$key)
+                                    <p class="save-status" aria-live="polite"></p>
+                                </form>
+                            @endif
+                        </section>
+                    @endforeach
                 </div>
-                @endif
-                <p class="save-status" aria-live="polite"></p>
-            </form>
-        @else
-            @include('builder.preview')
-        @endif
+            </div>
+            <button class="step-arrow" type="button" data-carousel-next aria-label="Lanjut ke langkah berikutnya">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+            </button>
+        </div>
         <footer class="flow-footer">Portomatis &middot; Ruang untuk potensi Anda.</footer>
     </main>
 </div>

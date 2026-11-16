@@ -1,0 +1,255 @@
+:root {
+    --green: #59616b;
+    --green-dark: #30363d;
+    --green-soft: #eceef1;
+    --dark: #292e34;
+    --muted: #737a83;
+    --line: #dfe2e6;
+    --soft: #f0f1f3;
+    --bg: #f7f8f9;
+    --accent: #59616b;
+    --text: #292e34;
+}
+
+.builder-shell,
+.flow-main,
+.workspace {
+    background: var(--bg);
+}
+
+.sidebar,
+.topbar,
+.form-card,
+.template-option {
+    background-color: #fff;
+}
+
+.step-link.active,
+.draft-note,
+.help-card,
+.repeat-row,
+.notice,
+.preview-tabs,
+.pdf-fallback,
+.domicile-suggestion {
+    background: var(--soft);
+}
+
+.notice {
+    border-color: var(--line);
+    color: var(--dark);
+}
+
+.error-summary {
+    border-color: #c9cdd2;
+    background: #f0f1f3;
+    color: #41474e;
+}
+
+.field-error,
+.remove-button {
+    color: #555b63;
+}
+
+.error-summary,
+.notice,
+input,
+textarea,
+select,
+.domicile-picker select {
+    border-color: var(--line);
+}
+
+.browser-dots i,
+.browser-dots i:nth-child(2),
+.browser-dots i:nth-child(3) {
+    background: #aeb3ba;
+}
+
+.step-progress {
+    height: 5px;
+    margin: -12px 0 28px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7e9ec;
+}
+
+.step-progress span {
+    display: block;
+    width: 20%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #777e87, #424951);
+    transition: width 220ms ease;
+}
+
+.js-enabled .step-panels {
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    transition: height 320ms ease;
+}
+
+.js-enabled .step-track {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    transition: transform 360ms cubic-bezier(.22, .75, .25, 1);
+    will-change: transform;
+}
+
+.step-carousel {
+    position: relative;
+}
+
+.step-arrow {
+    position: fixed;
+    top: 50vh;
+    z-index: 20;
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #08090a;
+    color: #fff;
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition: background 160ms ease, opacity 160ms ease, scale 160ms ease;
+}
+
+[data-carousel-prev] {
+    left: max(16px, calc((100vw - 1600px) / 2 + 16px));
+}
+
+[data-carousel-next] {
+    right: max(16px, calc((100vw - 1600px) / 2 + 16px));
+}
+
+.step-arrow[hidden],
+.template-choice-pending .step-arrow {
+    display: none;
+}
+
+.step-arrow:hover:not(:disabled) {
+    scale: 1.08;
+    background: #30363d;
+}
+
+.step-arrow:disabled {
+    opacity: .25;
+    cursor: not-allowed;
+}
+
+.step-arrow svg {
+    width: 31px;
+    height: 31px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.step-arrow:focus-visible {
+    outline: 3px solid #737a83;
+    outline-offset: 4px;
+}
+
+.js-enabled .step-panel[hidden] {
+    display: none;
+}
+
+.step-panel {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+.step-panel[aria-hidden="true"] {
+    pointer-events: none;
+}
+
+.step-panel .form-actions {
+    margin-top: 24px;
+}
+
+.step-panel .form-actions .button {
+    min-width: 150px;
+}
+
+.step-list .step-link.active .step-number {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.builder-loading .step-panel .form-actions button {
+    cursor: progress;
+}
+
+@media (max-width: 700px) {
+    .step-arrow {
+        width: 40px;
+        height: 40px;
+    }
+
+    [data-carousel-prev] {
+        left: 10px;
+    }
+
+    [data-carousel-next] {
+        right: 10px;
+    }
+
+    .step-arrow svg {
+        width: 25px;
+        height: 25px;
+    }
+
+    .step-progress {
+        margin-top: -14px;
+    }
+
+    .step-panel .form-actions {
+        position: sticky;
+        bottom: 8px;
+        z-index: 3;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, .94);
+        box-shadow: 0 8px 24px rgba(38, 43, 49, .08);
+        backdrop-filter: blur(12px);
+    }
+
+    .step-panel .form-actions .button {
+        min-width: 0;
+    }
+}
+
+@media (min-width: 701px) and (max-width: 900px) {
+    [data-carousel-prev] {
+        left: 12px;
+    }
+
+    [data-carousel-next] {
+        right: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .step-arrow {
+        transition: none;
+    }
+
+    .js-enabled .step-panels,
+    .js-enabled .step-track {
+        transition: none;
+    }
+
+    .step-progress span {
+        transition: none;
+    }
+}

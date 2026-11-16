@@ -2,11 +2,10 @@
     @foreach(\App\Http\Controllers\BuilderController::TEMPLATES as $key => $template)
         <div class="template-option">
             <label class="template-choice">
-            <input type="radio" name="template_selection" value="{{ $key }}" @checked(old('template', $draft['template'] ?? 'minimalist') === $key) required>
+            <input type="radio" name="template" value="{{ $key }}" @checked(old('template', $draft['template'] ?? 'minimalist') === $key) required>
             <span class="template-visual {{ $key }}" aria-hidden="true"><span class="mini-nav">YOUR NAME <span>ABOUT &nbsp; WORK</span></span><span class="mini-avatar">N</span><span class="mini-eyebrow">{{ $template['name'] }}</span><span class="mini-title">{{ $template['headline'] }}</span><span class="mini-description"></span><span class="mini-cta">Lihat karya &rarr;</span><span class="mini-projects"><i></i><i></i><i></i></span></span>
             <span class="template-label"><span class="template-category">{{ $template['category'] }}</span><strong>{{ $template['name'] }}</strong><span>{{ $template['description'] }}</span></span>
             </label>
-            <button class="button primary template-continue" type="submit" name="template" value="{{ $key }}" aria-label="Gunakan template {{ $template['name'] }} dan lanjut">{{ !empty($draft['personal']['name']) && !empty($draft['personal']['role']) ? 'Terapkan template' : 'Lanjut isi data' }} <span aria-hidden="true">&rarr;</span></button>
         </div>
     @endforeach
 </div>

@@ -31,11 +31,32 @@ class BuilderFlowTest extends TestCase
             ->assertSee('data-current-step="experience"', false)->assertDontSee('Selesai mengisi');
     }
 
+    public function test_builder_loads_every_form_section_in_one_swipeable_page(): void
+    {
+        $this->get('/builder/template')->assertOk()
+            ->assertSee('data-step-panel="template"', false)
+            ->assertSee('data-step-panel="personal"', false)
+            ->assertSee('data-step-panel="experience"', false)
+            ->assertSee('data-step-panel="projects"', false)
+            ->assertSee('data-step-panel="preview"', false)
+            ->assertSee('data-step-viewport', false)
+            ->assertSee('data-step-track', false)
+            ->assertSee('data-carousel-prev', false)
+            ->assertSee('data-carousel-next', false)
+            ->assertSee('name="template"', false)
+            ->assertDontSee('name="template_selection"', false)
+            ->assertDontSee('data-step-next', false)
+            ->assertDontSee('data-step-back', false)
+            ->assertDontSee('template-continue', false);
+    }
+
     public function test_preview_provides_website_and_pdf_formats_with_separate_downloads(): void
     {
         $this->withSession(['builder.draft' => [
             'template' => 'modern', 'personal' => ['name' => 'Ayu', 'role' => 'Designer'],
         ]])->get('/builder/preview')->assertOk()
+            ->assertSee('data-builder-step="template"', false)
+            ->assertSee('data-builder-step="personal"', false)
             ->assertSee('role="tablist"', false)
             ->assertSee('id="preview-website"', false)->assertSee('id="preview-pdf"', false)
             ->assertSee('data-pdf-src="'.route('builder.pdf').'"', false)

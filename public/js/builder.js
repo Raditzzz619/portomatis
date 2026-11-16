@@ -2,19 +2,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const main = document.querySelector('#form-content');
     if (!main) return;
     const stepOrder = ['template', 'personal', 'experience', 'projects', 'preview'];
-    const stepPaths = new Set(Array.from(document.querySelectorAll('[data-builder-step]'), link => new URL(link.href).pathname));
     let dirty = false;
     let busy = false;
-    let currentUrl = location.href;
-    let historyIndex = history.state?.builderIndex ?? 0;
-    let restoringHistory = false;
     let disposePhoto = () => {};
+    const viewport = main.querySelector('[data-step-viewport]');
+    const resizeObserver = 'ResizeObserver' in window ? new ResizeObserver(entries => {
+        const activePanel = main.querySelector('.step-panel.active');
+        if (entries.some(entry => entry.target === activePanel)) {
+            viewport.style.height = `${activePanel.offsetHeight}px`;
+        }
+    }) : null;
+    let templateChosen = main.dataset.currentStep !== 'template';
+    const descriptions = {
+        template: 'Pilih tampilan yang paling mencerminkan diri Anda. Bisa diubah kapan saja.',
+        personal: 'Mulai dengan perkenalan singkat. Bantu orang mengenal Anda dan karya Anda.',
+        experience: 'Ceritakan perjalanan belajar dan pengalaman profesional Anda.',
+        projects: 'Tunjukkan keahlian dan karya yang paling Anda banggakan.',
+        preview: 'Periksa hasilnya, unduh, atau publikasikan saat Anda sudah siap.',
+    };
 
     const markDirty = () => {
         dirty = true;
-        const status = main.querySelector('.save-status');
-        if (status) status.textContent = main.querySelector('.template-grid')
-            ? 'Tekan tombol pada template pilihan Anda untuk melanjutkan.'
+        const activeForm = main.querySelector('[data-step-panel].active .builder-form');
+        const status = activeForm?.querySelector('.save-status');
+        if (status) status.textContent = activeForm.querySelector('.template-grid')
+            ? 'Pilihan template akan disimpan saat Anda menekan panah kanan.'
             : 'Perubahan akan disimpan saat melanjutkan atau berpindah langkah.';
     };
     const showError = (message, errors = {}) => {
@@ -56,7 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (row) row.open = true;
         });
         if (list.children.length) summary.append(list);
-        main.querySelector('.page-heading').insertAdjacentElement('afterend', summary);
+        const activePanel = main.querySelector('[data-step-panel].active');
+        activePanel.querySelector('.builder-form')?.prepend(summary);
         summary.focus();
     };
     const initializePhoto = () => {
@@ -203,13 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
         window.PortomatisDomicile?.init(main);
         document.dispatchEvent(new CustomEvent('portomatis:step-ready', { detail: { root: main } }));
         main.querySelector('.error-summary')?.focus();
-        document.querySelector('[aria-current="step"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     };
     const saveForm = async (form, submitter) => {
         if (!form.reportValidity()) return null;
         const data = new FormData(form);
         if (submitter?.name) data.set(submitter.name, submitter.value);
-        if (form.querySelector('.template-grid') && !data.has('template')) data.set('template', data.get('template_selection') || 'minimalist');
         form.inert = true;
         const response = await fetch(form.action, {
             method: 'POST', body: data, credentials: 'same-origin',
@@ -224,65 +235,77 @@ document.addEventListener('DOMContentLoaded', () => {
         dirty = false;
         return response;
     };
-    const renderStep = async (response, historyMode, targetIndex) => {
-        if (!response.ok) throw new Error('Langkah ini belum dapat dimuat. Silakan coba lagi.');
+    const updatePreview = async url => {
+        const response = await fetch(url, { cache: 'no-store', credentials: 'same-origin', headers: { Accept: 'text/html' } });
+        if (!response.ok) throw new Error('Pratinjau belum berhasil diperbarui. Silakan coba lagi.');
         const page = new DOMParser().parseFromString(await response.text(), 'text/html');
-        const next = page.querySelector('#form-content');
-        if (!next || !page.querySelector('.sidebar')) throw new Error('Halaman belum berhasil dimuat. Silakan coba lagi.');
-        const backwards = stepOrder.indexOf(next.dataset.currentStep) < stepOrder.indexOf(main.dataset.currentStep);
-        if (!matchMedia('(prefers-reduced-motion: reduce)').matches && main.animate) {
-            await main.animate([{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0, transform: `translateX(${backwards ? 24 : -24}px)` }], { duration: 130, easing: 'ease-in' }).finished;
+        const preview = page.querySelector('[data-step-panel="preview"]');
+        const currentPreview = main.querySelector('[data-step-panel="preview"]');
+        if (!preview || !currentPreview) throw new Error('Pratinjau belum berhasil diperbarui. Silakan coba lagi.');
+        currentPreview.replaceChildren(...Array.from(preview.childNodes, node => document.importNode(node, true)));
+        initializePreview();
+    };
+    const activateStep = async (step, { pushHistory = true, focus = true } = {}) => {
+        if (!stepOrder.includes(step)) return;
+        if (step === 'preview' && !main.querySelector('[name="personal[name]"]')?.value.trim()) {
+            step = 'personal';
+            const notice = main.querySelector('.notice');
+            if (notice) notice.textContent = 'Isi nama dan profesi Anda terlebih dahulu untuk melihat pratinjau.';
         }
-        disposePhoto();
-        disposePhoto = () => {};
-        // Clone into the active document so embedded previews receive a browsing context.
-        main.replaceChildren(...Array.from(next.childNodes, node => document.importNode(node, true)));
-        main.dataset.currentStep = next.dataset.currentStep;
-        document.querySelector('.sidebar').replaceChildren(...page.querySelector('.sidebar').childNodes);
-        document.title = page.title;
-        currentUrl = response.url;
-        if (historyMode === 'push' && currentUrl !== location.href) history.pushState({ builder: true, builderIndex: ++historyIndex }, '', currentUrl);
-        else {
-            historyIndex = targetIndex ?? historyIndex;
-            history.replaceState({ builder: true, builderIndex: historyIndex }, '', currentUrl);
-        }
-        initializeStep();
-        if (!main.querySelector('.error-summary')) main.focus({ preventScroll: true });
-        main.scrollIntoView({ block: 'start', behavior: 'instant' });
-        if (!matchMedia('(prefers-reduced-motion: reduce)').matches && main.animate) {
-            await main.animate([{ opacity: 0, transform: `translateX(${backwards ? -24 : 24}px)` }, { opacity: 1, transform: 'translateX(0)' }], { duration: 210, easing: 'ease-out' }).finished;
+        const nextPanel = main.querySelector(`[data-step-panel="${step}"]`);
+        if (!nextPanel) return;
+        const previousIndex = stepOrder.indexOf(main.dataset.currentStep);
+        const nextIndex = stepOrder.indexOf(step);
+        const stepTrack = main.querySelector('[data-step-track]');
+        main.querySelectorAll('[data-step-panel]').forEach(panel => {
+            const active = panel === nextPanel;
+            panel.classList.toggle('active', active);
+            panel.setAttribute('aria-hidden', String(!active));
+            panel.inert = !active;
+        });
+        stepTrack.style.transform = `translateX(-${nextIndex * 100}%)`;
+        viewport.style.height = `${nextPanel.offsetHeight}px`;
+        resizeObserver?.disconnect();
+        resizeObserver?.observe(nextPanel);
+        main.dataset.currentStep = step;
+        main.querySelector('[data-step-title]').textContent = nextPanel.dataset.stepLabel;
+        main.querySelector('[data-step-count]').textContent = `LANGKAH ${nextIndex + 1} DARI ${stepOrder.length}`;
+        main.querySelector('[data-step-description]').textContent = descriptions[step];
+        main.querySelector('[data-progress-bar]').style.width = `${((nextIndex + 1) / stepOrder.length) * 100}%`;
+        main.querySelector('[data-carousel-prev]').disabled = nextIndex === 0;
+        main.querySelector('[data-carousel-next]').disabled = nextIndex === stepOrder.length - 1;
+        if (step === 'template' && templateChosen) main.classList.add('template-chosen');
+        document.title = `${nextPanel.dataset.stepLabel} - Portomatis`;
+        if (pushHistory && step !== main.dataset.historyStep) history.pushState({ builder: true, step }, '', location.href);
+        main.dataset.historyStep = step;
+        if (focus) {
+            main.querySelector('.page-heading').scrollIntoView({ block: 'start', behavior: 'smooth' });
+            main.querySelector('[data-step-title]').focus({ preventScroll: true });
         }
     };
-    const restoreHistory = targetIndex => {
-        const delta = historyIndex - targetIndex;
-        if (!Number.isFinite(delta) || !delta) return;
-        restoringHistory = true;
-        history.go(delta);
-    };
-    const navigate = async ({ url, form, submitter, historyMode = 'push', targetIndex }) => {
+    const navigate = async ({ step, form, submitter }) => {
         if (busy) return;
-        const activeForm = form || main.querySelector('.builder-form');
+        const activeForm = form || main.querySelector(`[data-form-step="${main.dataset.currentStep}"]`);
         busy = true;
         main.setAttribute('aria-busy', 'true');
         document.body.classList.add('builder-loading');
         try {
-            let response;
+            let response = null;
             if (activeForm && (form || dirty)) {
-                const status = main.querySelector('.save-status');
+                const status = activeForm.querySelector('.save-status');
                 if (status) status.textContent = 'Menyimpan data…';
                 response = await saveForm(activeForm, submitter);
                 if (!response) {
                     if (status) status.textContent = 'Lengkapi data yang ditandai agar perubahan dapat disimpan.';
-                    if (historyMode === 'replace') restoreHistory(targetIndex);
                     return;
                 }
             }
-            if (url && (!response || new URL(response.url).pathname !== new URL(url).pathname)) {
-                response = await fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'text/html' } });
+            if (response && activeForm?.dataset.formStep === 'template') step = 'preview';
+            if (response && (step === 'preview' || activeForm?.dataset.formStep === 'template')) {
+                await updatePreview(response.url);
             }
-            await renderStep(response, historyMode, targetIndex);
+            await activateStep(step || main.dataset.currentStep);
         } catch (error) {
-            if (historyMode === 'replace') restoreHistory(targetIndex);
             showError(error instanceof TypeError ? 'Koneksi terputus. Data Anda masih ada di formulir; coba simpan kembali.' : error.message);
         } finally {
             busy = false;
@@ -291,31 +314,96 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.classList.remove('builder-loading');
         }
     };
+    document.documentElement.classList.add('js-enabled');
+    main.dataset.historyStep = main.dataset.currentStep;
+    main.querySelectorAll('[data-step-panel]').forEach(panel => {
+        const inactive = panel.dataset.stepPanel !== main.dataset.currentStep;
+        panel.setAttribute('aria-hidden', String(inactive));
+        panel.inert = inactive;
+    });
+    const initialPanelIndex = stepOrder.indexOf(main.dataset.currentStep);
+    main.querySelector('[data-step-track]').style.transform = `translateX(-${initialPanelIndex * 100}%)`;
+    const initialActivePanel = main.querySelector('.step-panel.active');
+    viewport.style.height = `${initialActivePanel.offsetHeight}px`;
+    resizeObserver?.observe(initialActivePanel);
+    main.querySelector('[data-progress-bar]').style.width = `${((stepOrder.indexOf(main.dataset.currentStep) + 1) / stepOrder.length) * 100}%`;
+    main.querySelector('[data-carousel-prev]').disabled = stepOrder.indexOf(main.dataset.currentStep) === 0;
+    main.querySelector('[data-carousel-next]').disabled = stepOrder.indexOf(main.dataset.currentStep) === stepOrder.length - 1;
+    if (templateChosen) main.classList.add('template-chosen');
+    else main.classList.add('template-choice-pending');
+    history.replaceState({ builder: true, step: main.dataset.currentStep }, '', location.href);
     main.addEventListener('input', event => { if (event.target.closest('.builder-form')) markDirty(); });
-    main.addEventListener('change', event => { if (event.target.closest('.builder-form')) markDirty(); });
+    main.addEventListener('change', event => {
+        if (!event.target.closest('.builder-form')) return;
+        markDirty();
+        if (event.target.matches('input[name="template"]')) {
+            templateChosen = true;
+            main.classList.remove('template-choice-pending');
+            main.classList.add('template-chosen');
+        }
+    });
     main.addEventListener('invalid', event => { const row = event.target.closest('[data-row]'); if (row) row.open = true; }, true);
     main.addEventListener('submit', event => {
         if (!event.target.matches('.builder-form') || !window.fetch) return;
         event.preventDefault();
-        navigate({ form: event.target, submitter: event.submitter });
+        const orderIndex = stepOrder.indexOf(event.target.dataset.formStep);
+        navigate({ form: event.target, submitter: event.submitter, step: stepOrder[orderIndex + 1] });
     });
     document.addEventListener('click', event => {
+        const carouselArrow = event.target.closest('[data-carousel-prev], [data-carousel-next]');
+        if (carouselArrow) {
+            const index = stepOrder.indexOf(main.dataset.currentStep);
+            if (carouselArrow.matches('[data-carousel-prev]') && index > 0) {
+                activateStep(stepOrder[index - 1]);
+            } else if (carouselArrow.matches('[data-carousel-next]') && index < stepOrder.length - 1) {
+                if (main.dataset.currentStep === 'template' && !templateChosen) return;
+                const nextStep = stepOrder[index + 1];
+                const form = main.querySelector(`[data-form-step="${main.dataset.currentStep}"]`);
+                if (form) navigate({ form, step: nextStep });
+                else activateStep(nextStep);
+            }
+            return;
+        }
+        if (event.target.closest('[data-go-to-personal]')) {
+            activateStep('personal');
+            return;
+        }
         const link = event.target.closest('a[href]');
         if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target || link.hasAttribute('download')) return;
         const url = new URL(link.href);
-        if (url.origin !== location.origin || !stepPaths.has(url.pathname) || url.hash || !window.fetch) return;
+        const requestedStep = link.dataset.builderStep;
+        if (url.origin !== location.origin || !stepOrder.includes(requestedStep) || url.hash || !window.fetch) return;
         event.preventDefault();
-        if (url.href !== currentUrl) navigate({ url: url.href });
-    });
-    window.addEventListener('popstate', event => {
-        if (restoringHistory) { restoringHistory = false; return; }
-        if (stepPaths.has(location.pathname)) {
-            const targetIndex = event.state?.builderIndex;
-            if (busy) restoreHistory(targetIndex);
-            else navigate({ url: location.href, historyMode: 'replace', targetIndex });
+        if (requestedStep === main.dataset.currentStep) return;
+        if (dirty && stepOrder.indexOf(requestedStep) > stepOrder.indexOf(main.dataset.currentStep)) {
+            navigate({ form: main.querySelector(`[data-form-step="${main.dataset.currentStep}"]`), step: requestedStep });
+        } else {
+            activateStep(requestedStep);
         }
     });
+    window.addEventListener('popstate', event => {
+        const step = event.state?.step || Array.from(document.querySelectorAll('[data-builder-step]'))
+            .find(link => new URL(link.href).pathname === location.pathname)?.dataset.builderStep;
+        if (step) activateStep(step, { pushHistory: false });
+    });
+    let touchStartX = null;
+    main.addEventListener('touchstart', event => { touchStartX = event.changedTouches[0]?.screenX ?? null; }, { passive: true });
+    main.addEventListener('touchend', event => {
+        if (touchStartX === null || busy) return;
+        const distance = event.changedTouches[0].screenX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(distance) < 70) return;
+        const index = stepOrder.indexOf(main.dataset.currentStep);
+        if (distance < 0 && index < stepOrder.length - 1) {
+            const form = main.querySelector(`[data-form-step="${main.dataset.currentStep}"]`);
+            if (form) navigate({ form, step: stepOrder[index + 1] });
+            else activateStep(stepOrder[index + 1]);
+        } else if (distance > 0 && index > 0) activateStep(stepOrder[index - 1]);
+    }, { passive: true });
     window.addEventListener('beforeunload', event => { if (dirty) { event.preventDefault(); event.returnValue = ''; } });
-    history.replaceState({ builder: true, builderIndex: historyIndex }, '', currentUrl);
+    window.addEventListener('resize', () => {
+        const activePanel = main.querySelector('.step-panel.active');
+        viewport.style.height = `${activePanel.offsetHeight}px`;
+    });
     initializeStep();
 });
