@@ -67,6 +67,8 @@ return [
 
     'timezone' => 'UTC',
 
+    'analytics_timezone' => env('ANALYTICS_TIMEZONE', 'Asia/Singapore'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

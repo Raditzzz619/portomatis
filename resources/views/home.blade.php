@@ -6,6 +6,7 @@
   <title>Portomatis — Buat Portofolio Profesional</title>
   <meta name="description" content="Buat portofolio profesional dalam hitungan detik dengan Portomatis." />
   <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/account.css') }}">
 </head>
 
 <body>
@@ -26,6 +27,7 @@
         <span class="brand-name">Portomatis</span>
       </a>
 
+      @include('partials.account-nav')
       <form method="POST" action="{{ route('builder.new') }}">@csrf
       <button type="submit" class="nav-cta">
         Mulai Membuat

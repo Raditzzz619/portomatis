@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ asset('css/builder-refinements.css') }}">
     <link rel="stylesheet" href="{{ asset('css/domicile.css') }}">
     <link rel="stylesheet" href="{{ asset('css/monochrome.css') }}?v={{ filemtime(public_path('css/monochrome.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/account.css') }}?v={{ filemtime(public_path('css/account.css')) }}">
     <script src="{{ asset('js/domicile.js') }}" defer></script>
     <script src="{{ asset('js/builder.js') }}?v={{ filemtime(public_path('js/builder.js')) }}" defer></script>
 </head>
@@ -15,7 +16,7 @@
 <a class="skip-link" href="#form-content">Langsung ke konten</a>
 <header class="topbar">
     <a href="{{ url('/') }}" class="brand"><span class="brand-icon" aria-hidden="true">P</span>Portomatis</a>
-    <a class="home-link" href="{{ url('/') }}">Kembali ke beranda <span aria-hidden="true">&nearr;</span></a>
+    @include('partials.account-nav')
 </header>
 <div class="builder-shell">
     <main id="form-content" class="flow-main" data-current-step="{{ $step }}" tabindex="-1">
@@ -31,6 +32,9 @@
             } }}</p>
         </div>
         @if(session('notice'))<div class="notice" role="status">{{ session('notice') }}</div>@endif
+        @if($savedPortfolios->isNotEmpty())
+        <details class="saved-drafts"><summary>Portofolio tersimpan ({{ $savedPortfolios->count() }})</summary><ul>@foreach($savedPortfolios as $saved)<li><a href="{{ route('builder.resume', $saved->id) }}">{{ $saved->content['personal']['name'] ?? 'Draft tanpa nama' }} · #{{ $saved->id }}</a><small>Diperbarui {{ $saved->updated_at->timezone(config('app.analytics_timezone'))->format('d/m/Y H:i') }}</small></li>@endforeach</ul></details>
+        @endif
         <div class="step-progress" aria-label="Progres pengisian">
             <span data-progress-bar></span>
         </div>

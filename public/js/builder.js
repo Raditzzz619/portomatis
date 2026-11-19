@@ -300,7 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
             }
-            if (response && activeForm?.dataset.formStep === 'template') step = 'preview';
+            if (response && activeForm?.dataset.formStep === 'template') {
+                const nextStep = new URL(response.url).pathname.split('/').pop();
+                if (stepOrder.includes(nextStep)) step = nextStep;
+            }
             if (response && (step === 'preview' || activeForm?.dataset.formStep === 'template')) {
                 await updatePreview(response.url);
             }
@@ -346,6 +349,14 @@ document.addEventListener('DOMContentLoaded', () => {
     main.addEventListener('submit', event => {
         if (!event.target.matches('.builder-form') || !window.fetch) return;
         event.preventDefault();
+        if (event.submitter?.matches('.template-use')) {
+            const radio = Array.from(event.target.querySelectorAll('input[name="template"]'))
+                .find(input => input.value === event.submitter.value);
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
         const orderIndex = stepOrder.indexOf(event.target.dataset.formStep);
         navigate({ form: event.target, submitter: event.submitter, step: stepOrder[orderIndex + 1] });
     });

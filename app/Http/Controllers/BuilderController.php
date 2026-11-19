@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PublishedPortfolio;
+use App\Models\BuilderPortfolio;
+use App\Services\PortfolioInsights;
 use App\Services\PortfolioPdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -40,6 +42,7 @@ class BuilderController extends Controller
         $request->session()->forget('builder');
         $request->session()->forget(['_old_input', 'errors']);
         $request->session()->put('builder.draft', ['template' => 'minimalist']);
+        $this->persist($request, ['template' => 'minimalist']);
 
         return redirect()->route('builder.step', 'template')
             ->with('notice', 'Portofolio baru siap dibuat. Pilih template, lalu isi data Anda.');
@@ -48,22 +51,30 @@ class BuilderController extends Controller
     public function step(Request $request, string $step)
     {
         abort_unless(array_key_exists($step, self::STEPS), 404);
+        $this->restore($request);
         $draft = $request->session()->get('builder.draft', ['template' => 'minimalist']);
         if ($step === 'preview' && empty($draft['personal']['name'])) {
             return redirect()->route('builder.step', 'personal')->with('notice', 'Isi nama dan profesi Anda terlebih dahulu.');
         }
 
-        return view('builder', [
+        if ($step === 'preview') {
+            $this->persist($request, $draft, true);
+        }
+
+        return response()->view('builder', [
             'step' => $step,
             'steps' => self::STEPS,
             'draft' => $draft,
             'shareUrl' => $request->session()->get('builder.share_url'),
-        ]);
+            'insights' => app(PortfolioInsights::class)->analyze($draft),
+            'savedPortfolios' => $request->user()->portfolios()->latest('updated_at')->latest('id')->get(['id', 'content', 'updated_at']),
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     public function save(Request $request, string $step)
     {
         abort_unless(in_array($step, ['template', 'personal', 'experience', 'projects'], true), 404);
+        $this->restore($request);
         $url = ['nullable', 'url:http,https', 'max:2048'];
         $rules = match ($step) {
             'template' => ['template' => ['required', Rule::in(array_keys(self::TEMPLATES))]],
@@ -127,6 +138,7 @@ class BuilderController extends Controller
         }
         $draft = array_replace($request->session()->get('builder.draft', ['template' => 'minimalist']), $data);
         $request->session()->put('builder.draft', $draft);
+        $this->persist($request, $draft, $step === 'projects' && !empty($draft['personal']['name']));
         // A public link remains a snapshot; editing a draft never changes it implicitly.
         $request->session()->forget('builder.share_url');
         $order = array_keys(self::STEPS);
@@ -158,6 +170,7 @@ class BuilderController extends Controller
 
     private function draft(Request $request): array
     {
+        $this->restore($request);
         $draft = $request->session()->get('builder.draft', []);
         abort_if(empty($draft['personal']['name']), 422, 'Lengkapi info pribadi terlebih dahulu.');
 
@@ -203,6 +216,8 @@ class BuilderController extends Controller
         PublishedPortfolio::updateOrCreate(['token' => $token], ['content' => $draft]);
         $request->session()->put('builder.published_token', $token);
         $request->session()->put('builder.share_url', route('builder.public', $token));
+        $portfolio = $this->persist($request, $draft, true);
+        $portfolio->update(['published_token' => $token]);
 
         return redirect()->route('builder.step', 'preview')->with('notice', 'Portofolio dipublikasikan. Tautan publik siap dibagikan.');
     }
@@ -213,5 +228,51 @@ class BuilderController extends Controller
 
         return response()->view('builder.portfolio', ['draft' => $portfolio->content])
             ->header('X-Robots-Tag', 'noindex, nofollow');
+    }
+
+    public function resume(Request $request, string $portfolio)
+    {
+        $record = $request->user()->portfolios()->findOrFail($portfolio);
+        $request->session()->forget('builder');
+        $this->loadRecord($request, $record);
+
+        return redirect()->route('builder.step', empty($record->content['personal']['name']) ? 'template' : 'preview');
+    }
+
+    private function restore(Request $request): void
+    {
+        if (!$request->session()->has('builder.draft')) {
+            $record = $request->user()->portfolios()->latest('updated_at')->latest('id')->first();
+            if ($record) {
+                $this->loadRecord($request, $record);
+            }
+        }
+    }
+
+    private function loadRecord(Request $request, BuilderPortfolio $record): void
+    {
+        $request->session()->put('builder.portfolio_id', $record->id);
+        $request->session()->put('builder.draft', $record->content);
+        if ($record->published_token) {
+            $request->session()->put('builder.published_token', $record->published_token);
+            $request->session()->put('builder.share_url', route('builder.public', $record->published_token));
+        }
+    }
+
+    private function persist(Request $request, array $draft, bool $complete = false): BuilderPortfolio
+    {
+        // Scope every draft lookup to its owner, including IDs from an older session.
+        $record = $request->user()->portfolios()->find($request->session()->get('builder.portfolio_id'));
+        if (!$record) {
+            $record = $request->user()->portfolios()->make();
+        }
+        $record->content = $draft;
+        if ($complete && !$record->completed_at) {
+            $record->completed_at = now();
+        }
+        $record->save();
+        $request->session()->put('builder.portfolio_id', $record->id);
+
+        return $record;
     }
 }

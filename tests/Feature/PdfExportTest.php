@@ -7,6 +7,8 @@ use Tests\TestCase;
 
 class PdfExportTest extends TestCase
 {
+    use \Tests\Concerns\AuthenticatedBuilder;
+
     private function draft(): array
     {
         return [

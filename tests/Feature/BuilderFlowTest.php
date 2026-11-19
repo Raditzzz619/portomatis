@@ -6,6 +6,8 @@ use Tests\TestCase;
 
 class BuilderFlowTest extends TestCase
 {
+    use \Tests\Concerns\AuthenticatedBuilder;
+
     public function test_async_validation_preserves_the_previous_draft_and_returns_field_errors(): void
     {
         $draft = ['template' => 'modern', 'personal' => ['name' => 'Ayu', 'role' => 'Designer']];
@@ -47,7 +49,7 @@ class BuilderFlowTest extends TestCase
             ->assertDontSee('name="template_selection"', false)
             ->assertDontSee('data-step-next', false)
             ->assertDontSee('data-step-back', false)
-            ->assertDontSee('template-continue', false);
+            ->assertSee('class="template-use"', false)->assertSee('Lanjutkan');
     }
 
     public function test_preview_provides_website_and_pdf_formats_with_separate_downloads(): void

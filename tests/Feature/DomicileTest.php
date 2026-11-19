@@ -7,6 +7,8 @@ use Tests\TestCase;
 
 class DomicileTest extends TestCase
 {
+    use \Tests\Concerns\AuthenticatedBuilder;
+
     public function test_domicile_selection_covers_all_provinces_and_regencies_without_a_provider_request(): void
     {
         \Illuminate\Support\Facades\Http::preventStrayRequests();

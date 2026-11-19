@@ -6,6 +6,7 @@
             <span class="template-visual {{ $key }}" aria-hidden="true"><span class="mini-nav">YOUR NAME <span>ABOUT &nbsp; WORK</span></span><span class="mini-avatar">N</span><span class="mini-eyebrow">{{ $template['name'] }}</span><span class="mini-title">{{ $template['headline'] }}</span><span class="mini-description"></span><span class="mini-cta">Lihat karya &rarr;</span><span class="mini-projects"><i></i><i></i><i></i></span></span>
             <span class="template-label"><span class="template-category">{{ $template['category'] }}</span><strong>{{ $template['name'] }}</strong><span>{{ $template['description'] }}</span></span>
             </label>
+            <button class="template-use" type="submit" name="template" value="{{ $key }}" aria-label="Lanjutkan dengan template {{ $template['name'] }}">Lanjutkan <span aria-hidden="true">&rarr;</span></button>
         </div>
     @endforeach
 </div>

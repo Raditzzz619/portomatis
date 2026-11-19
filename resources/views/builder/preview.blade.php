@@ -13,12 +13,13 @@
     <div class="preview-frame pdf-frame"><div class="browser-bar">Portofolio {{ $draft['personal']['name'] }} · Dokumen PDF A4</div><iframe title="Pratinjau PDF portofolio {{ $draft['personal']['name'] }}" data-pdf-src="{{ route('builder.pdf') }}" loading="lazy"></iframe></div>
 </section>
 <noscript><p class="form-hint">Lihat versi PDF melalui <a href="{{ route('builder.pdf') }}" target="_blank" rel="noopener">pratinjau PDF</a> atau tombol Unduh PDF.</p></noscript>
+@include('builder.insights')
 <section class="form-card publish-card"><div><span class="eyebrow">SIAP DIBAGIKAN?</span><h2>Beri karya Anda ruang untuk dikenal.</h2><p>Publikasikan untuk membuat tautan yang dapat dibuka siapa saja. Perubahan draft baru terlihat di tautan publik setelah Anda mempublikasikan ulang.</p></div>
     <form method="POST" action="{{ route('builder.publish') }}">@csrf<button class="button primary" type="submit">{{ $shareUrl ? 'Publikasikan ulang' : 'Publikasikan portofolio' }} &nearr;</button></form>
     @if($shareUrl)<div class="share-box"><label for="share-url">Tautan publik Anda</label><div><input id="share-url" readonly value="{{ $shareUrl }}"><button class="button secondary" type="button" data-copy>Salin tautan</button></div><a href="{{ $shareUrl }}" target="_blank" rel="noopener">Buka portofolio &nearr;</a><span data-copy-status role="status"></span></div>@endif
 </section>
 <p class="form-hint">HTML adalah website mandiri yang dapat dibuka di browser atau diunggah ke hosting. PDF siap dikirim sebagai lampiran lamaran atau dicetak. Keduanya memakai data draft yang sama.</p>
 <form method="POST" action="{{ route('builder.new') }}">@csrf
-    <p class="form-hint">Ingin membuat portofolio untuk data yang berbeda? Mulai baru akan mengosongkan draft ini. Portofolio yang sudah dipublikasikan tetap tersedia.</p>
+    <p class="form-hint">Ingin membuat portofolio untuk data yang berbeda? Mulai baru akan membuka draft kosong. Portofolio sebelumnya tetap tersimpan di akun Anda.</p>
     <button class="button secondary" type="submit">Buat portofolio baru</button>
 </form>

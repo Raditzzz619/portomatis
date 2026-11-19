@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\PublishedPortfolio;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\AuthenticatedBuilder;
 use Tests\TestCase;
 
 class BuilderTest extends TestCase
 {
-    use RefreshDatabase;
+    use AuthenticatedBuilder;
 
     public function test_starting_new_clears_previous_draft_and_keeps_published_portfolio(): void
     {
@@ -28,7 +28,7 @@ class BuilderTest extends TestCase
             ->assertSessionMissing('builder.share_url')
             ->assertSessionMissing('builder.published_token');
         $this->post('/builder/template', ['template' => 'web'])->assertRedirect('/builder/personal');
-        $this->get('/builder/personal')->assertOk()->assertDontSee('Ayu Lama');
+        $this->get('/builder/personal')->assertOk()->assertViewHas('draft', ['template' => 'web']);
         $this->get('/builder/preview')->assertRedirect('/builder/personal');
         $this->get('/p/'.$previousToken)->assertOk()->assertSee('Ayu Lama');
         $this->post('/builder/personal', ['personal' => ['name' => 'Budi Baru', 'role' => 'Developer']]);
