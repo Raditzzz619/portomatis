@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Foundation\Application;
@@ -11,12 +12,21 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Mengenali HTTPS dari proxy hosting
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'activity' => \App\Http\Middleware\TrackUserActivity::class,
         ]);
-        $middleware->redirectUsersTo(fn () => auth()->user()?->role === 'admin' ? route('admin.index') : route('builder'));
+
+        $middleware->redirectUsersTo(
+            fn () => auth()->user()?->role === 'admin'
+                ? route('admin.index')
+                : route('builder')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();
